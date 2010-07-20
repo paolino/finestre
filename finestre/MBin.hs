@@ -1,46 +1,53 @@
+{-# LANGUAGE NoMonomorphismRestriction #-}
 module MBin where
 import Prelude hiding (lookup)
-import Data.IntMap hiding (map, partition)
+import Data.Map hiding (map, partition)
 import Data.List (group, sort)
 import Control.Arrow ((&&&))
+import qualified Data.Array as A
+import Control.Parallel.Strategies
+import Debug.Trace
 
-type Misura = Int
 
-type Bin = IntMap Int
+type Bin a  = Map a Int
 
-mkBin :: [Misura] -> Bin
+-- mkBin :: [Misura] -> Bin
 mkBin = fromList . map (head &&& length) . group . sort 
 
+data MBin a = MBin !a !Int (Bin a) deriving Show
 
-type Esecuzione = (Misura,Int) 
-
-data MBin = MBin Esecuzione Bin deriving Show
-
-fromBin  :: Bin -> MBin
-fromBin bin = MBin (foldr (\(x,m) (k,n) -> (m * x + k, n + 1)) (0,0) $ assocs bin) bin
+-- fromBin  :: Bin -> MBin
+fromBin bin = let (m,n) = foldr (\(x,m) (k,n) -> (fromIntegral m * x + k, n + 1)) (0,0) $ assocs bin
+	in MBin m n bin
   
-vuoto :: MBin 
-vuoto = MBin (0,0) empty
+-- vuoto :: MBin 
+vuoto = MBin 0 0 empty
 
-contains :: Misura -> MBin -> Bool
-contains x (MBin _ b) = case lookup x b of
+-- contains :: Misura -> MBin -> Bool
+contains x (MBin _ _ b) = case lookup x b of
 	Nothing -> False
 	Just r -> r > 0
 
-purge :: Misura -> MBin -> MBin 
-purge x (MBin (g,n) b) =  MBin (g - x, n -1) $ adjust (subtract 1) x b
+-- purge :: Misura -> MBin -> MBin 
+purge x (MBin g n b) =  MBin (g - x) (n -1) $ adjust (subtract 1) x b
 
-accept :: (Esecuzione -> Bool) -> Misura -> MBin -> Bool
-accept k x (MBin (g,n) _) = k (g + x , n + 1) 
+-- accept :: (Misura -> Int -> Bool) -> Misura -> MBin -> Bool
+accept k x (MBin g n _) = k (g + x) (n + 1) 
 
-insert :: Misura -> MBin -> MBin 
-insert x (MBin (g,n) b) = MBin (g + x, n + 1) $ adjust (+ 1) x b
+-- insert :: Misura -> MBin -> MBin 
+insert x (MBin g n b) =  MBin (g + x) (n + 1) $ insertWith (+) x 1 b
 
-type Chromo = [MBin]
-type Question = Bin
+type Chromo a = [MBin a]
+type Question a = Bin a
 
-pieces :: Chromo -> Bin
-pieces = unions . map (\(MBin _ x) -> x)
+-- pieces :: Chromo -> Bin
+pieces = unionsWith (+) . map (\(MBin _ _ x) -> x)
+
+-- sviluppo :: Bin -> [Misura]
+sviluppo = concatMap (\(x,k) -> replicate k x) . assocs
+
+
+
 
 
 

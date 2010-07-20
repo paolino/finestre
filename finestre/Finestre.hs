@@ -7,36 +7,35 @@ import Control.Arrow ((&&&))
 -- import Debug.Trace (trace)
 
 
-type Misura = Int -- millimetri
 
-type Soluzione = [[Misura]]
+type Soluzione a = [[a]]
 
-type Scarto = [Misura] -> Misura
+type Scarto a = [a] -> a
 
-type Enumera = Scarto -> [Misura] -> Soluzione
+type Enumera a = Scarto a -> [a] -> Soluzione a
 
-firstFit :: Enumera 
+firstFit :: (Num a, Ord a) => Enumera  a
 firstFit y = foldl' (inserto y) []  
 
-firstFitDec :: Enumera
+firstFitDec :: (Num a, Ord a) => Enumera a
 firstFitDec y = firstFit y . reverse . sort
 
-inserto :: Scarto -> Soluzione -> Misura -> Soluzione
+inserto :: (Num a, Ord a) => Scarto a -> Soluzione a -> a -> Soluzione a
 inserto y zss x  = let
 	(rs,ts) = break ((>=0) . y . (x:)) zss
 	in case ts of 
 		[] -> rs ++ [[x]]
 		t:ts' -> rs ++ (x:t):ts'
 
-type Finestra = (Misura, Misura) -> [Misura]
-type Serie = [(Int,Finestra,(Misura,Misura))]
+type Finestra a = (a, a) -> [a]
+type Serie a = [(Int,Finestra a,(a,a))]
 
-fromSerie :: Serie -> [Misura] 
+fromSerie :: Serie a -> [a] 
 fromSerie = concat . concatMap (\(n,t,(x,y)) -> replicate n $ t (x,y))
 
-type ConScarto = ([Misura],Misura)
+type ConScarto a = ([a],a)
 
-solve :: Scarto -> Enumera -> Serie -> [ConScarto]
+solve :: Scarto a -> Enumera a -> Serie a -> [ConScarto a]
 solve g f = map (id &&& g) . f g . fromSerie 
 
 lPrint :: Show a  => [a] -> IO ()

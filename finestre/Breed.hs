@@ -2,40 +2,33 @@ module Breed where
 
 import MBin
 import Control.Monad
-import Data.List (partition)
-import Data.IntMap hiding (insert,partition)
+import Data.List (partition,sort)
+import Data.Map hiding (insert,partition,filter)
+import qualified Data.Map as M (map)
+import Control.Arrow ((&&&))
+import Debug.Trace
 
-
-surplus :: Chromo -> Question -> [Misura]
-surplus z q = concatMap (\(k,x) -> replicate k x) . assocs $ difference (pieces z) q
-
-missings :: Chromo -> Question -> [Misura]
-missings z q = concatMap (\(k,x) -> replicate k x) .assocs $ difference q (pieces z)
+diff :: Ord t => Chromo t -> Question t -> [Either t t]
+diff z q = let 	f (x,k) = replicate (abs k)  $ if k > 0 then Right x else Left x 
+		in reverse . sort . concatMap f . assocs $ unionWith (+)  (pieces z) (M.map negate q)
 
 type Shuffle m a = [a] -> m [a]
 type TackleOne m a = (a -> a) -> [a] -> m [a]
 
-purgeChromo :: (Functor m , Monad m) => TackleOne m MBin -> Question -> Chromo -> m Chromo
-purgeChromo s q c = foldM f c $ surplus c q where
-	f c x = let (gs,bs) = partition (contains x) c	in 
+-- correct :: (Ord t, Functor m , Monad m, Num t) => (t -> Int -> Bool) -> TackleOne m (MBin t) -> Question t -> Chromo t -> m (Chromo t)
+correct k s q c = foldM f c $ diff c q where
+	f c (Right x) = let (gs,bs) = partition (contains x) c	in 
 		case gs of 
-			[] -> error "incoerenza"
+			[] -> error $ "incoerenza"
 			gs' -> (++ bs) `fmap` s (purge x) gs'	
-
-updateChromo :: (Functor m, Monad m) 
-	=> ((Misura,Int) -> Bool) ->  TackleOne m MBin 
-	-> Question -> Chromo -> m Chromo
-updateChromo k s q c = foldM f c $ missings c q where
-	f c x = let (gs,bs) = partition (accept k x) c	in 
+	f c (Left x) = let (gs,bs) = partition (accept k x) c	in 
 		case gs of 
-			[] -> return $ MBin (x,1) (singleton x 1):bs
-			gs -> (++ bs) `fmap` s (insert x) gs	
+			[] -> return $ MBin x 1 (singleton x 1):bs
+			gs' ->  (++ bs) `fmap` s (insert x) gs'	
 
-breed :: (Functor m, Monad m) 
-	=> ((Misura,Int) -> Bool) ->  TackleOne m MBin 
-	-> Shuffle m MBin -> Question -> Chromo -> Chromo -> m Chromo
-breed k t s q x y = 
-	take (length x) `fmap` s (x ++ y) >>= 
-	purgeChromo t q >>= 
-	updateChromo k t q 
+-- breed :: (Ord t, Functor m, Monad m, Num t) 
+-- 	=> (t -> Int -> Bool) ->  TackleOne m (MBin t)
+-- 	-> Shuffle m (MBin t) -> Question t -> Int -> Chromo t -> Chromo t -> m (Chromo t)
+breed k t s q v x y = take v `fmap` s (x ++ y) >>= correct k t q
+	
 	

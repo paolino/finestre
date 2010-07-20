@@ -2,6 +2,8 @@ module Random where
 
 import System.Random
 import Data.List (splitAt)
+import Control.Monad
+
 
 shuffle :: [a] -> IO [a]
 shuffle = shuffle' Nothing 
@@ -21,6 +23,19 @@ pick ml xs = do
 	let (ys,z:zs) = splitAt n xs
 	return $ (z,ys ++ zs,l)
 
+sample :: Int -> [a] -> IO [a]
+sample n xs = fmap (\(_,rs,_) -> rs) . (\f -> foldM f (xs,[],Nothing) [1..n]) $ \(xs,rs,ml) _ -> do
+	(x,ys,ml') <- pick ml xs
+	return (ys,x:rs,Just ml')
+
+wsample ::   
+	[(Float,a)]	-- ^ list of weighted elements (weight,elem)
+        -> IO [a]        -- ^ picked elements
+wsample xs = (map j . randomRs (0, sum . map fst $ xs)) `fmap` getStdGen
+	where
+	j x = snd. head. dropWhile ((< x). fst). scanl1 (\(s, _) (z, a) -> (s + z, a)) $ xs
+
+		
 tackle :: (a -> a) ->  [a] -> IO [a]
 tackle f xs = do	
 	(x,xs',_) <- pick Nothing xs 
