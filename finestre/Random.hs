@@ -9,7 +9,7 @@ shuffle :: [a] -> IO [a]
 shuffle = shuffle' Nothing 
 
 shuffle' :: Maybe Int -> [a] -> IO [a]
-shuffle' _  [] = error "empty"
+shuffle' _  [] = return []
 shuffle' _ [x] = return [x]
 shuffle' ml xs = do 
 	(x,xs',l) <- pick ml xs

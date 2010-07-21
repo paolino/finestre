@@ -1,6 +1,7 @@
 module Score where
 
-import MBin
+import Breed (Chromo)
+import MBin (MBin)
 
 type Scarto a = MBin a -> a
 

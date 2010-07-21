@@ -37,11 +37,6 @@ accept k x (MBin g n _) = k (g + x) (n + 1)
 -- insert :: Misura -> MBin -> MBin 
 insert x (MBin g n b) =  MBin (g + x) (n + 1) $ insertWith (+) x 1 b
 
-type Chromo a = [MBin a]
-type Question a = Bin a
-
--- pieces :: Chromo -> Bin
-pieces = unionsWith (+) . map (\(MBin _ _ x) -> x)
 
 -- sviluppo :: Bin -> [Misura]
 sviluppo = concatMap (\(x,k) -> replicate k x) . assocs
