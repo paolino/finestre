@@ -11,6 +11,8 @@ import Control.Parallel.Strategies
 import Text.Printf
 
 import MBin
+import Score
+import Cuts
 
 
 type Misura = Int -- millimetri
@@ -25,8 +27,8 @@ markmap f (Marked x) = Marked (f x)
 markmap f (UnMarked x) = UnMarked (f x)
 
 -----------------------------------------------------------------------------------
-taglio :: (Misura -> Misura) -> [Marked] -> [(Marked,Marked)]
-taglio cutWaste = snd . mapAccumL k 0 .  reverse . sortBy (flip $ comparing misura)
+taglio :: (Misura -> Misura) -> Misura -> [Marked] -> [(Marked,Marked)]
+taglio cutWaste maxWood = snd . mapAccumL k 0 .  ordbybestcut (cutWaste . misura) (maxWood `div` 2)  . sortBy (flip $ comparing misura)
 	where k t x = (cutWaste $ t + misura x , ((t +) `markmap` x,x))
 	
 showMisura x = printf "%3d,%1d" a b
@@ -37,9 +39,9 @@ showTagli  = unlines . map (\(n,ys) -> printf "%2d)  "  n ++
 	intercalate " " (map (\(x,_) -> showMark x) ys ) ++ replicate (max 0 ((7 - length ys) * 7)) ' ' ++ " (" ++ 
 	intercalate " " (map (\(_,t) -> showMark t) ys )++ ")") . zip [(1 :: Int)..]
 
-trace cw tutto xs = do
-	print . length . head $ xs
-	writeFile "soluzione" . showTagli . map (taglio cw) . marks tutto . head  $ xs
+trace cw mw tutto xs = do
+	print . take 6 . map (length &&& score) $ xs
+	writeFile "soluzione" . showTagli . map (taglio cw mw) . marks tutto . head  $ xs
 -------------------------------------------------
 mark ::  [Marked] -> MBin Misura -> ([Marked],[Marked])
 mark ys = mapAccumL f ys . sviluppo . (\(MBin _ _ b) -> b) where

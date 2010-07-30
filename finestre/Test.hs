@@ -2,6 +2,7 @@
 
 import Infissi
 import Driver
+import Score 
 
 
 telaioInterno = map BiMarked
@@ -9,17 +10,20 @@ telaioInterno = map BiMarked
 --- sottotetto
 -------------------------------------------------
 
+-- N
 u1 = finestraSC (1200,700)
 u2 = finestraTC (1200,1950)
-u3 = telaioTrapezio (860,1420,1430) ++ finestraD (860,1430) ++ telaioInterno [1430]
+u3 = telaioTrapezio (500,1077,1437) ++ finestraD (500,1437) ++ telaioInterno [1437]
 u4 = finestraTC (440,1490)
+-- S
 u5 = finestraTC (750,1780)
 u6 = finestraTC (730,1880)
 u7 = finestraTC (725,1560)
 u8 = finestraTC (720,2095)
-u9 = telaioTrapezio (732,1410,1691) ++ telaioInterno [1691,657,1020] ++ finestraD (657,1020)
-u10 = telaioTrapezio (1950,1537,1020) ++ telaioInterno [1020,1020] ++ finestraD (1193,1020)
-u11 = telaioTrapezio (1265,1950,1713) ++ telaioInterno [1713,1193,1033] ++ finestraD (1193,1033)
+-- W
+u9 = telaioTrapezio (705,1369,1665) ++ telaioInterno [1665,649,1004] ++ finestraD (649,1004)
+u10 = telaioTrapezio (1901,1501,1004) ++ telaioInterno [1004,1004] ++ finestraD (1181,1004)
+u11 = telaioTrapezio (1231,1924,1687) ++ telaioInterno [1687,1181,1011] ++ finestraD (1181,1011)
 
 sottotetto = concat [u1,u2,u3,u4,u5,u6,u7,u8,u9,u10,u11]
 ----------------------------------------------------------------------------
@@ -76,12 +80,13 @@ bedroom = concat [br1]
 -------------------------------
 
 tutto :: [Marked]
-tutto = bedroom ++ disimpegno ++ corridoio ++ living ++ sottotetto ++ bagno
+tutto = sottotetto
+-- bedroom ++ disimpegno ++ corridoio ++ living ++ sottotetto ++ bagno
  
 ------------------------------------
-lunghezzaListe = 4400
+lunghezzaListe = 4250
 scartoTaglio = 3
 
 main = let 
-	(main,_,_) =  mkDriver scartoTaglio lunghezzaListe  (map misura tutto) (trace (+ scartoTaglio) tutto)
+	(main,_,_) =  mkDriver scartoTaglio lunghezzaListe  (map misura tutto) (trace (+ scartoTaglio) lunghezzaListe tutto) score
 	in main

@@ -6,6 +6,7 @@ import Data.List (group, sort)
 import Control.Arrow ((&&&))
 import qualified Data.Array as A
 import Control.Parallel.Strategies
+import Control.DeepSeq
 import Debug.Trace
 
 
@@ -14,7 +15,9 @@ type Bin a  = Map a Int
 -- mkBin :: [Misura] -> Bin
 mkBin = fromList . map (head &&& length) . group . sort 
 
-data MBin a = MBin !a !Int (Bin a) deriving Show
+data MBin a = MBin {somma :: !a, pezzi :: !Int , elementi :: Bin a} deriving (Show,Eq)
+instance NFData a => NFData (MBin a) where
+	rnf (MBin s pz els) = rnf els
 
 -- fromBin  :: Bin -> MBin
 fromBin bin = let (m,n) = foldr (\(x,m) (k,n) -> (fromIntegral m * x + k, n + 1)) (0,0) $ assocs bin
