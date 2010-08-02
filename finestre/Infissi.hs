@@ -1,6 +1,6 @@
 module Infissi where
 
-import Data.List (mapAccumL, sort, minimumBy, sortBy, intercalate,find,delete)
+import Data.List ((\\),mapAccumL, sort, minimumBy, sortBy, intercalate,find,delete)
 import Control.Monad
 import System.Random
 import Data.Ord (comparing) 
@@ -28,8 +28,11 @@ markmap f (UnMarked x) = UnMarked (f x)
 
 -----------------------------------------------------------------------------------
 taglio :: (Misura -> Misura) -> Misura -> [Marked] -> [(Marked,Marked)]
-taglio cutWaste maxWood = snd . mapAccumL k 0 .  ordbybestcut (cutWaste . misura) (maxWood `div` 2)  . sortBy (flip $ comparing misura)
-	where k t x = (cutWaste $ t + misura x , ((t +) `markmap` x,x))
+taglio cutWaste maxWood = snd . mapAccumL k 0 . reorder . sortBy (flip $ comparing misura)
+	where 	k t x = (cutWaste $ t + misura x , ((t +) `markmap` x,x))
+		reorder xs = ys ++ (xs \\ ys) where
+			ys = bestsubset (cutWaste . misura) (maxWood `div` 2) xs
+
 	
 showMisura x = printf "%3d,%1d" a b
 	where (a,b) =  x `divMod` 10 

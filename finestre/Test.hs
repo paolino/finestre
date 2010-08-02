@@ -14,12 +14,12 @@ telaioInterno = map BiMarked
 u1 = finestraSC (1200,700)
 u2 = finestraTC (1200,1950)
 u3 = telaioTrapezio (500,1077,1437) ++ finestraD (500,1437) ++ telaioInterno [1437]
-u4 = finestraTC (440,1490)
+u4 = finestraTC (440,1480)
 -- S
-u5 = finestraTC (750,1780)
+u5 = finestraTC (750,1770)
 u6 = finestraTC (730,1880)
 u7 = finestraTC (725,1560)
-u8 = finestraTC (720,2095)
+u8 = finestraTC (715,2090)
 -- W
 u9 = telaioTrapezio (705,1369,1665) ++ telaioInterno [1665,649,1004] ++ finestraD (649,1004)
 u10 = telaioTrapezio (1901,1501,1004) ++ telaioInterno [1004,1004] ++ finestraD (1181,1004)
